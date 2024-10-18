@@ -1,13 +1,19 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // يجب إضافة Flutter Gradle Plugin بعد Android و Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
+}
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
 android {
     namespace = "com.example.zain_cash_api"
-    compileSdkVersion 34
+    compileSdk 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -20,29 +26,47 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.zain_cash_api"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdkVersion 21 // الحد الأدنى للإصدار المدعوم
-        targetSdkVersion 33
+        minSdk 21 // الحد الأدنى للإصدار المدعوم
+        targetSdk 33
         versionCode 1
         versionName "1.0"
     }
 
+    signingConfigs {
+        release {
+            // التحقق من وجود ملف keystore وتحديد البيانات المطلوبة للتوقيع.
+            if (keystorePropertiesFile.exists()) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            // التأكد من إعداد توقيع النسخة النهائية
+            signingConfig signingConfigs.release
+            minifyEnabled false // تعطيل تصغير الكود
+            shrinkResources false // تعطيل تصغير الموارد
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            signingConfig signingConfigs.debug // توقيع النسخة التجريبية باستخدام مفاتيح التوقيع الافتراضية
         }
     }
 }
 
 flutter {
-    source = "../.."
+    source = "../.." // مسار مصدر Flutter
 }
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    // تبعيات أخرى
+    implementation "com.google.android.material:material:1.12.0"
+
+    // تبعيات أخرى حسب الحاجة
 }
